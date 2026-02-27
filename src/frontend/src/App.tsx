@@ -1,12 +1,13 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface MediaItem {
   name: string;
   link: string;
-  bg: string;       // Tailwind arbitrary bg — raw hex for inline style
+  bg: string;
   emoji?: string;
+  type: "app" | "youtube";
 }
 
 interface Section {
@@ -15,159 +16,242 @@ interface Section {
   accentColor: string;
 }
 
+// ─── YouTube helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Extract a YouTube video/live ID from various YouTube URL formats.
+ * Returns null if the link is not a recognised YouTube video URL.
+ */
+function extractYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    // youtube.com/live/<id>
+    const liveMatch = u.pathname.match(/\/live\/([A-Za-z0-9_-]{11})/);
+    if (liveMatch) return liveMatch[1];
+    // youtu.be/<id>
+    if (u.hostname === "youtu.be") {
+      const id = u.pathname.slice(1).split("?")[0];
+      if (id.length >= 11) return id.slice(0, 11);
+    }
+    // youtube.com/watch?v=<id>
+    const v = u.searchParams.get("v");
+    if (v) return v;
+    // youtube.com/playlist?list=… — no single video id, return null
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build an embed src URL from a YouTube video id.
+ */
+function buildEmbedUrl(videoId: string): string {
+  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+}
+
+/**
+ * For Play Store links, build an Android intent URL that opens the app
+ * directly (falls back to Play Store if not installed).
+ */
+function buildAppLink(playStoreUrl: string): string {
+  try {
+    const u = new URL(playStoreUrl);
+    const pkg = u.searchParams.get("id");
+    if (pkg) {
+      // intent:// scheme opens the app; fallback S.browser_fallback_url sends
+      // the user to Play Store if the app is not installed.
+      return (
+        `intent://#Intent;scheme=https;package=${pkg};` +
+        `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`
+      );
+    }
+  } catch {
+    // fall through
+  }
+  return playStoreUrl;
+}
+
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const OTT_APPS: MediaItem[] = [
-  {
-    name: "ETV WIN",
-    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
-    bg: "#b91c1c",
-    emoji: "📺",
-  },
-  {
-    name: "SUN NXT",
-    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
-    bg: "#ea580c",
-    emoji: "☀️",
-  },
-  {
-    name: "HOT STAR",
-    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
-    bg: "#1d4ed8",
-    emoji: "⭐",
-  },
-  {
-    name: "ZEE 5",
-    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
-    bg: "#7c3aed",
-    emoji: "5️⃣",
-  },
-  {
-    name: "AHA",
-    link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
-    bg: "#be185d",
-    emoji: "🎬",
-  },
-  {
-    name: "SONY LIV",
-    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
-    bg: "#0f766e",
-    emoji: "🔴",
-  },
-  {
-    name: "AMAZON PRIME",
-    link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
-    bg: "#0369a1",
-    emoji: "🛒",
-  },
-  {
-    name: "NET FLIX",
-    link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
-    bg: "#dc2626",
-    emoji: "🎭",
-  },
+  { name: "ETV WIN",      link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",              bg: "#b91c1c", emoji: "📺", type: "app" },
+  { name: "SUN NXT",      link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",               bg: "#ea580c", emoji: "☀️", type: "app" },
+  { name: "HOT STAR",     link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",              bg: "#1d4ed8", emoji: "⭐", type: "app" },
+  { name: "ZEE 5",        link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",             bg: "#7c3aed", emoji: "5️⃣", type: "app" },
+  { name: "AHA",          link: "https://play.google.com/store/apps/details?id=ahaflix.tv",                     bg: "#be185d", emoji: "🎬", type: "app" },
+  { name: "SONY LIV",     link: "https://play.google.com/store/apps/details?id=com.sonyliv",                    bg: "#0f766e", emoji: "🔴", type: "app" },
+  { name: "AMAZON PRIME", link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient", bg: "#0369a1", emoji: "🛒", type: "app" },
+  { name: "NET FLIX",     link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",        bg: "#dc2626", emoji: "🎭", type: "app" },
 ];
 
 const TV_CHANNELS: MediaItem[] = [
-  {
-    name: "ETV",
-    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
-    bg: "#b45309",
-    emoji: "📡",
-  },
-  {
-    name: "GEMINI",
-    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
-    bg: "#4338ca",
-    emoji: "♊",
-  },
-  {
-    name: "STAR MAA",
-    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
-    bg: "#0e7490",
-    emoji: "⭐",
-  },
-  {
-    name: "ZEE TELUGU",
-    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
-    bg: "#6d28d9",
-    emoji: "🌸",
-  },
-  {
-    name: "SPORTS",
-    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
-    bg: "#065f46",
-    emoji: "🏆",
-  },
+  { name: "ETV",        link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",  bg: "#b45309", emoji: "📡", type: "app" },
+  { name: "GEMINI",     link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",   bg: "#4338ca", emoji: "♊", type: "app" },
+  { name: "STAR MAA",   link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",  bg: "#0e7490", emoji: "⭐", type: "app" },
+  { name: "ZEE TELUGU", link: "https://play.google.com/store/apps/details?id=com.graymatrix.did", bg: "#6d28d9", emoji: "🌸", type: "app" },
+  { name: "SPORTS",     link: "https://play.google.com/store/apps/details?id=com.sonyliv",        bg: "#065f46", emoji: "🏆", type: "app" },
 ];
 
 const NEWS_CHANNELS: MediaItem[] = [
-  {
-    name: "TV9",
-    link: "https://www.youtube.com/live/II_m28Bm-iM?si=s14Ud_UQus9xzsc4",
-    bg: "#9f1239",
-    emoji: "📰",
-  },
-  {
-    name: "V6",
-    link: "https://www.youtube.com/live/U58aDf-zfmY?si=Xu9hU2bYRT7_bT9w",
-    bg: "#1e40af",
-    emoji: "📢",
-  },
-  {
-    name: "T NEWS",
-    link: "https://www.youtube.com/live/e_JVjPm96V8?si=297yQg0titTxWYlc",
-    bg: "#92400e",
-    emoji: "🗞️",
-  },
-  {
-    name: "N TV",
-    link: "https://www.youtube.com/live/L0RktSIM980?si=f574WHml0qnMJ1LO",
-    bg: "#1f2937",
-    emoji: "📻",
-  },
+  { name: "TV9",    link: "https://www.youtube.com/live/II_m28Bm-iM?si=s14Ud_UQus9xzsc4", bg: "#9f1239", emoji: "📰", type: "youtube" },
+  { name: "V6",     link: "https://www.youtube.com/live/U58aDf-zfmY?si=Xu9hU2bYRT7_bT9w", bg: "#1e40af", emoji: "📢", type: "youtube" },
+  { name: "T NEWS", link: "https://www.youtube.com/live/e_JVjPm96V8?si=297yQg0titTxWYlc", bg: "#92400e", emoji: "🗞️", type: "youtube" },
+  { name: "N TV",   link: "https://www.youtube.com/live/L0RktSIM980?si=f574WHml0qnMJ1LO", bg: "#1f2937", emoji: "📻", type: "youtube" },
 ];
 
 const YOUTUBE_CHANNELS: MediaItem[] = [
-  {
-    name: "SS LOCAL",
-    link: "https://youtube.com/@sslocal264?si=Lg5VJWkdkUDtMB1Q",
-    bg: "#dc2626",
-    emoji: "▶️",
-  },
-  {
-    name: "DJ SONGS",
-    link: "https://youtube.com/playlist?list=PL8yjkbZSTUmU32VtYBtYLgwjmnbiIuwrI&si=ojEj-eg7GAq1lbrg",
-    bg: "#7c3aed",
-    emoji: "🎵",
-  },
-  {
-    name: "FOLK SONGS",
-    link: "https://youtu.be/_r0Ct38-gUU?si=ER30j6CGd8ATvfcL",
-    bg: "#065f46",
-    emoji: "🎶",
-  },
+  { name: "SS LOCAL",   link: "https://youtube.com/@sslocal264?si=Lg5VJWkdkUDtMB1Q",                                       bg: "#dc2626", emoji: "▶️", type: "youtube" },
+  { name: "DJ SONGS",   link: "https://youtube.com/playlist?list=PL8yjkbZSTUmU32VtYBtYLgwjmnbiIuwrI&si=ojEj-eg7GAq1lbrg", bg: "#7c3aed", emoji: "🎵", type: "youtube" },
+  { name: "FOLK SONGS", link: "https://youtu.be/_r0Ct38-gUU?si=ER30j6CGd8ATvfcL",                                          bg: "#065f46", emoji: "🎶", type: "youtube" },
 ];
 
 const SECTIONS: Section[] = [
-  { title: "OTT APPS", items: OTT_APPS, accentColor: "#22dd44" },
-  { title: "TV CHANNELS", items: TV_CHANNELS, accentColor: "#22dd44" },
-  { title: "NEWS CHANNELS", items: NEWS_CHANNELS, accentColor: "#22dd44" },
-  { title: "YOUTUBE", items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
+  { title: "OTT APPS",      items: OTT_APPS,        accentColor: "#22dd44" },
+  { title: "TV CHANNELS",   items: TV_CHANNELS,     accentColor: "#22dd44" },
+  { title: "NEWS CHANNELS", items: NEWS_CHANNELS,   accentColor: "#22dd44" },
+  { title: "YOUTUBE",       items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
 ];
+
+// ─── YouTube Modal ─────────────────────────────────────────────────────────────
+
+function YouTubeModal({
+  item,
+  onClose,
+}: {
+  item: MediaItem;
+  onClose: () => void;
+}) {
+  const videoId = extractYouTubeId(item.link);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Play ${item.name}`}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(6px)" }}
+      onClick={onClose}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
+    >
+      <div
+        className="relative w-full mx-4 rounded-2xl overflow-hidden"
+        style={{ maxWidth: "640px", background: "#000" }}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => { if (e.key !== "Escape") e.stopPropagation(); }}
+        role="document"
+      >
+        {/* Title bar */}
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ background: "#111" }}
+        >
+          <span className="font-bold text-white tracking-wider text-sm">
+            {item.name}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-white/60 hover:text-white transition-colors text-xl leading-none"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Player */}
+        <div style={{ position: "relative", paddingTop: "56.25%" }}>
+          {videoId ? (
+            <iframe
+              src={buildEmbedUrl(videoId)}
+              title={item.name}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                border: "none",
+              }}
+            />
+          ) : (
+            // Playlist / channel — no embeddable single video; open in new tab
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/70"
+              style={{ background: "#0a0a0a" }}
+            >
+              <span className="text-5xl">{item.emoji}</span>
+              <p className="text-sm text-center px-6">
+                This link opens a playlist or channel.
+              </p>
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2 rounded-full text-sm font-bold text-black"
+                style={{ background: "#22dd44" }}
+                onClick={onClose}
+              >
+                Open in YouTube
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Hint */}
+      <p className="mt-4 text-xs text-white/30">Tap outside to close</p>
+    </div>
+  );
+}
 
 // ─── MediaCard Component ───────────────────────────────────────────────────────
 
-function MediaCard({ item }: { item: MediaItem }) {
+function MediaCard({
+  item,
+  onYouTubeClick,
+}: {
+  item: MediaItem;
+  onYouTubeClick: (item: MediaItem) => void;
+}) {
+  if (item.type === "youtube") {
+    return (
+      <button
+        onClick={() => onYouTubeClick(item)}
+        type="button"
+      className="flex flex-col items-center gap-2 shrink-0 group bg-transparent border-0 p-0 cursor-pointer"
+        style={{ width: "90px" }}
+      >
+        <div
+          className="rounded-2xl flex items-center justify-center text-3xl transition-all duration-200 group-hover:scale-110 group-active:scale-95"
+          style={{
+            width: "72px",
+            height: "72px",
+            background: item.bg,
+            boxShadow: `0 4px 16px ${item.bg}55`,
+          }}
+        >
+          {item.emoji}
+        </div>
+        <span
+          className="text-center leading-tight font-bold text-white/90 group-hover:text-white transition-colors duration-150"
+          style={{ fontSize: "10px", maxWidth: "88px" }}
+        >
+          {item.name}
+        </span>
+      </button>
+    );
+  }
+
+  // App link — use intent:// to open app directly on Android
   return (
     <a
-      href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={buildAppLink(item.link)}
       className="flex flex-col items-center gap-2 shrink-0 group"
       style={{ width: "90px" }}
     >
-      {/* Icon box */}
       <div
         className="rounded-2xl flex items-center justify-center text-3xl transition-all duration-200 group-hover:scale-110 group-active:scale-95"
         style={{
@@ -179,7 +263,6 @@ function MediaCard({ item }: { item: MediaItem }) {
       >
         {item.emoji}
       </div>
-      {/* Label */}
       <span
         className="text-center leading-tight font-bold text-white/90 group-hover:text-white transition-colors duration-150"
         style={{ fontSize: "10px", maxWidth: "88px" }}
@@ -192,12 +275,17 @@ function MediaCard({ item }: { item: MediaItem }) {
 
 // ─── ScrollableRow Component ───────────────────────────────────────────────────
 
-function ScrollableRow({ section }: { section: Section }) {
+function ScrollableRow({
+  section,
+  onYouTubeClick,
+}: {
+  section: Section;
+  onYouTubeClick: (item: MediaItem) => void;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
     <section className="w-full">
-      {/* Section heading */}
       <div className="flex items-center gap-3 px-4 mb-4">
         <div
           className="h-5 w-1 rounded-full"
@@ -215,18 +303,20 @@ function ScrollableRow({ section }: { section: Section }) {
         </h2>
       </div>
 
-      {/* Scrollable row */}
       <div
         ref={scrollRef}
         className="scrollbar-hide flex gap-4 px-4 pb-2 overflow-x-auto"
         style={{ touchAction: "pan-x" }}
       >
         {section.items.map((item) => (
-          <MediaCard key={item.name} item={item} />
+          <MediaCard
+            key={item.name}
+            item={item}
+            onYouTubeClick={onYouTubeClick}
+          />
         ))}
       </div>
 
-      {/* Divider */}
       <div
         className="mt-5 mx-4"
         style={{
@@ -242,6 +332,8 @@ function ScrollableRow({ section }: { section: Section }) {
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [activeYT, setActiveYT] = useState<MediaItem | null>(null);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -250,8 +342,14 @@ export default function App() {
           "radial-gradient(ellipse at 50% 0%, oklch(0.13 0.04 142 / 0.5) 0%, oklch(0.08 0 0) 60%)",
       }}
     >
+      {/* YouTube modal */}
+      {activeYT && (
+        <YouTubeModal item={activeYT} onClose={() => setActiveYT(null)} />
+      )}
+
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10"
+      <header
+        className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10"
         style={{
           background: "oklch(0.10 0.01 142 / 0.92)",
           backdropFilter: "blur(12px)",
@@ -261,7 +359,12 @@ export default function App() {
         <img
           src="/assets/uploads/IMG_20230812_092139-1.png"
           alt="SS LOCAL logo"
-          style={{ height: "52px", width: "52px", objectFit: "contain", borderRadius: "12px" }}
+          style={{
+            height: "52px",
+            width: "52px",
+            objectFit: "contain",
+            borderRadius: "12px",
+          }}
         />
         <div>
           <h1
@@ -274,7 +377,10 @@ export default function App() {
           >
             SS LOCAL
           </h1>
-          <p className="text-xs font-body tracking-wider" style={{ color: "oklch(0.55 0 0)" }}>
+          <p
+            className="text-xs font-body tracking-wider"
+            style={{ color: "oklch(0.55 0 0)" }}
+          >
             YOUR MEDIA HUB
           </p>
         </div>
@@ -283,7 +389,11 @@ export default function App() {
       {/* Main content */}
       <main className="flex-1 flex flex-col gap-7 py-6">
         {SECTIONS.map((section) => (
-          <ScrollableRow key={section.title} section={section} />
+          <ScrollableRow
+            key={section.title}
+            section={section}
+            onYouTubeClick={setActiveYT}
+          />
         ))}
       </main>
 
