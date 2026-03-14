@@ -75,42 +75,162 @@ function buildAppLink(playStoreUrl: string): string {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const OTT_APPS: MediaItem[] = [
-  { name: "ETV WIN",      link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",              bg: "#b91c1c", emoji: "📺", type: "app" },
-  { name: "SUN NXT",      link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",               bg: "#ea580c", emoji: "☀️", type: "app" },
-  { name: "HOT STAR",     link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",              bg: "#1d4ed8", emoji: "⭐", type: "app" },
-  { name: "ZEE 5",        link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",             bg: "#7c3aed", emoji: "5️⃣", type: "app" },
-  { name: "AHA",          link: "https://play.google.com/store/apps/details?id=ahaflix.tv",                     bg: "#be185d", emoji: "🎬", type: "app" },
-  { name: "SONY LIV",     link: "https://play.google.com/store/apps/details?id=com.sonyliv",                    bg: "#0f766e", emoji: "🔴", type: "app" },
-  { name: "AMAZON PRIME", link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient", bg: "#0369a1", emoji: "🛒", type: "app" },
-  { name: "NET FLIX",     link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",        bg: "#dc2626", emoji: "🎭", type: "app" },
+  {
+    name: "ETV WIN",
+    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
+    bg: "#b91c1c",
+    emoji: "📺",
+    type: "app",
+  },
+  {
+    name: "SUN NXT",
+    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
+    bg: "#ea580c",
+    emoji: "☀️",
+    type: "app",
+  },
+  {
+    name: "HOT STAR",
+    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
+    bg: "#1d4ed8",
+    emoji: "⭐",
+    type: "app",
+  },
+  {
+    name: "ZEE 5",
+    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
+    bg: "#7c3aed",
+    emoji: "5️⃣",
+    type: "app",
+  },
+  {
+    name: "AHA",
+    link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
+    bg: "#be185d",
+    emoji: "🎬",
+    type: "app",
+  },
+  {
+    name: "SONY LIV",
+    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
+    bg: "#0f766e",
+    emoji: "🔴",
+    type: "app",
+  },
+  {
+    name: "AMAZON PRIME",
+    link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
+    bg: "#0369a1",
+    emoji: "🛒",
+    type: "app",
+  },
+  {
+    name: "NET FLIX",
+    link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
+    bg: "#dc2626",
+    emoji: "🎭",
+    type: "app",
+  },
 ];
 
 const TV_CHANNELS: MediaItem[] = [
-  { name: "ETV",        link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",  bg: "#b45309", emoji: "📡", type: "app" },
-  { name: "GEMINI",     link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",   bg: "#4338ca", emoji: "♊", type: "app" },
-  { name: "STAR MAA",   link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",  bg: "#0e7490", emoji: "⭐", type: "app" },
-  { name: "ZEE TELUGU", link: "https://play.google.com/store/apps/details?id=com.graymatrix.did", bg: "#6d28d9", emoji: "🌸", type: "app" },
-  { name: "SPORTS",     link: "https://play.google.com/store/apps/details?id=com.sonyliv",        bg: "#065f46", emoji: "🏆", type: "app" },
+  {
+    name: "ETV",
+    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
+    bg: "#b45309",
+    emoji: "📡",
+    type: "app",
+  },
+  {
+    name: "GEMINI",
+    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
+    bg: "#4338ca",
+    emoji: "♊",
+    type: "app",
+  },
+  {
+    name: "STAR MAA",
+    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
+    bg: "#0e7490",
+    emoji: "⭐",
+    type: "app",
+  },
+  {
+    name: "ZEE TELUGU",
+    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
+    bg: "#6d28d9",
+    emoji: "🌸",
+    type: "app",
+  },
+  {
+    name: "SPORTS",
+    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
+    bg: "#065f46",
+    emoji: "🏆",
+    type: "app",
+  },
 ];
 
 const NEWS_CHANNELS: MediaItem[] = [
-  { name: "TV9",    link: "https://www.youtube.com/live/II_m28Bm-iM?si=s14Ud_UQus9xzsc4", bg: "#9f1239", emoji: "📰", type: "youtube" },
-  { name: "V6",     link: "https://www.youtube.com/live/U58aDf-zfmY?si=Xu9hU2bYRT7_bT9w", bg: "#1e40af", emoji: "📢", type: "youtube" },
-  { name: "T NEWS", link: "https://www.youtube.com/live/e_JVjPm96V8?si=297yQg0titTxWYlc", bg: "#92400e", emoji: "🗞️", type: "youtube" },
-  { name: "N TV",   link: "https://www.youtube.com/live/L0RktSIM980?si=f574WHml0qnMJ1LO", bg: "#1f2937", emoji: "📻", type: "youtube" },
+  {
+    name: "TV9",
+    link: "https://www.youtube.com/live/II_m28Bm-iM?si=s14Ud_UQus9xzsc4",
+    bg: "#9f1239",
+    emoji: "📰",
+    type: "youtube",
+  },
+  {
+    name: "V6",
+    link: "https://www.youtube.com/live/U58aDf-zfmY?si=Xu9hU2bYRT7_bT9w",
+    bg: "#1e40af",
+    emoji: "📢",
+    type: "youtube",
+  },
+  {
+    name: "T NEWS",
+    link: "https://www.youtube.com/live/e_JVjPm96V8?si=297yQg0titTxWYlc",
+    bg: "#92400e",
+    emoji: "🗞️",
+    type: "youtube",
+  },
+  {
+    name: "N TV",
+    link: "https://www.youtube.com/live/L0RktSIM980?si=f574WHml0qnMJ1LO",
+    bg: "#1f2937",
+    emoji: "📻",
+    type: "youtube",
+  },
 ];
 
 const YOUTUBE_CHANNELS: MediaItem[] = [
-  { name: "SS LOCAL",   link: "https://youtube.com/@sslocal264?si=Lg5VJWkdkUDtMB1Q",                                       bg: "#dc2626", emoji: "▶️", type: "youtube" },
-  { name: "DJ SONGS",   link: "https://youtube.com/playlist?list=PL8yjkbZSTUmU32VtYBtYLgwjmnbiIuwrI&si=ojEj-eg7GAq1lbrg", bg: "#7c3aed", emoji: "🎵", type: "youtube" },
-  { name: "FOLK SONGS", link: "https://youtu.be/_r0Ct38-gUU?si=ER30j6CGd8ATvfcL",                                          bg: "#065f46", emoji: "🎶", type: "youtube" },
+  {
+    name: "SS LOCAL",
+    link: "https://youtube.com/@sslocal264?si=Lg5VJWkdkUDtMB1Q",
+    bg: "#dc2626",
+    emoji: "▶️",
+    type: "youtube",
+  },
+  {
+    name: "DJ SONGS",
+    link: "https://youtube.com/playlist?list=PL8yjkbZSTUmU32VtYBtYLgwjmnbiIuwrI&si=ojEj-eg7GAq1lbrg",
+    bg: "#7c3aed",
+    emoji: "🎵",
+    type: "youtube",
+  },
+  {
+    name: "FOLK SONGS",
+    link: "https://youtu.be/_r0Ct38-gUU?si=ER30j6CGd8ATvfcL",
+    bg: "#065f46",
+    emoji: "🎶",
+    type: "youtube",
+  },
 ];
 
 const SECTIONS: Section[] = [
-  { title: "OTT APPS",      items: OTT_APPS,        accentColor: "#22dd44" },
-  { title: "TV CHANNELS",   items: TV_CHANNELS,     accentColor: "#22dd44" },
-  { title: "NEWS CHANNELS", items: NEWS_CHANNELS,   accentColor: "#22dd44" },
-  { title: "YOUTUBE",       items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
+  { title: "NEWS CHANNELS", items: NEWS_CHANNELS, accentColor: "#22dd44" },
+  { title: "YOUTUBE", items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
+  { title: "TV CHANNELS", items: TV_CHANNELS, accentColor: "#22dd44" },
+  { title: "OTT APPS", items: OTT_APPS, accentColor: "#22dd44" },
 ];
 
 // ─── YouTube Modal ─────────────────────────────────────────────────────────────
@@ -125,11 +245,10 @@ function YouTubeModal({
   const videoId = extractYouTubeId(item.link);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
       aria-label={`Play ${item.name}`}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
+      open
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center m-0 w-full h-full max-w-none max-h-none border-0 p-0"
       style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(6px)" }}
       onClick={onClose}
       onKeyDown={(e) => e.key === "Escape" && onClose()}
@@ -138,7 +257,9 @@ function YouTubeModal({
         className="relative w-full mx-4 rounded-2xl overflow-hidden"
         style={{ maxWidth: "640px", background: "#000" }}
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => { if (e.key !== "Escape") e.stopPropagation(); }}
+        onKeyDown={(e) => {
+          if (e.key !== "Escape") e.stopPropagation();
+        }}
         role="document"
       >
         {/* Title bar */}
@@ -203,7 +324,7 @@ function YouTubeModal({
 
       {/* Hint */}
       <p className="mt-4 text-xs text-white/30">Tap outside to close</p>
-    </div>
+    </dialog>
   );
 }
 
@@ -221,7 +342,7 @@ function MediaCard({
       <button
         onClick={() => onYouTubeClick(item)}
         type="button"
-      className="flex flex-col items-center gap-2 shrink-0 group bg-transparent border-0 p-0 cursor-pointer"
+        className="flex flex-col items-center gap-2 shrink-0 group bg-transparent border-0 p-0 cursor-pointer"
         style={{ width: "90px" }}
       >
         <div
