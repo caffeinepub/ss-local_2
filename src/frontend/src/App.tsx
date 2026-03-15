@@ -7,6 +7,7 @@ interface MediaItem {
   link: string;
   bg: string;
   emoji?: string;
+  image?: string;
   type: "app" | "youtube";
 }
 
@@ -18,49 +19,32 @@ interface Section {
 
 // ─── YouTube helpers ──────────────────────────────────────────────────────────
 
-/**
- * Extract a YouTube video/live ID from various YouTube URL formats.
- * Returns null if the link is not a recognised YouTube video URL.
- */
 function extractYouTubeId(url: string): string | null {
   try {
     const u = new URL(url);
-    // youtube.com/live/<id>
     const liveMatch = u.pathname.match(/\/live\/([A-Za-z0-9_-]{11})/);
     if (liveMatch) return liveMatch[1];
-    // youtu.be/<id>
     if (u.hostname === "youtu.be") {
       const id = u.pathname.slice(1).split("?")[0];
       if (id.length >= 11) return id.slice(0, 11);
     }
-    // youtube.com/watch?v=<id>
     const v = u.searchParams.get("v");
     if (v) return v;
-    // youtube.com/playlist?list=… — no single video id, return null
     return null;
   } catch {
     return null;
   }
 }
 
-/**
- * Build an embed src URL from a YouTube video id.
- */
 function buildEmbedUrl(videoId: string): string {
   return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
 }
 
-/**
- * For Play Store links, build an Android intent URL that opens the app
- * directly (falls back to Play Store if not installed).
- */
 function buildAppLink(playStoreUrl: string): string {
   try {
     const u = new URL(playStoreUrl);
     const pkg = u.searchParams.get("id");
     if (pkg) {
-      // intent:// scheme opens the app; fallback S.browser_fallback_url sends
-      // the user to Play Store if the app is not installed.
       return (
         `intent://#Intent;scheme=https;package=${pkg};` +
         `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`
@@ -176,28 +160,28 @@ const NEWS_CHANNELS: MediaItem[] = [
     name: "TV9",
     link: "https://www.youtube.com/live/II_m28Bm-iM?si=s14Ud_UQus9xzsc4",
     bg: "#9f1239",
-    emoji: "📰",
+    image: "/assets/uploads/TV9-2.png",
     type: "youtube",
   },
   {
     name: "V6",
     link: "https://www.youtube.com/live/U58aDf-zfmY?si=Xu9hU2bYRT7_bT9w",
     bg: "#1e40af",
-    emoji: "📢",
+    image: "/assets/uploads/V6-4.jpeg",
     type: "youtube",
   },
   {
     name: "T NEWS",
     link: "https://www.youtube.com/live/e_JVjPm96V8?si=297yQg0titTxWYlc",
     bg: "#92400e",
-    emoji: "🗞️",
+    image: "/assets/uploads/Tnews-3.jpeg",
     type: "youtube",
   },
   {
-    name: "N TV",
+    name: "NTV",
     link: "https://www.youtube.com/live/L0RktSIM980?si=f574WHml0qnMJ1LO",
     bg: "#1f2937",
-    emoji: "📻",
+    image: "/assets/uploads/NTV-1.jpeg",
     type: "youtube",
   },
 ];
@@ -298,7 +282,6 @@ function YouTubeModal({
               }}
             />
           ) : (
-            // Playlist / channel — no embeddable single video; open in new tab
             <div
               className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/70"
               style={{ background: "#0a0a0a" }}
@@ -322,7 +305,6 @@ function YouTubeModal({
         </div>
       </div>
 
-      {/* Hint */}
       <p className="mt-4 text-xs text-white/30">Tap outside to close</p>
     </dialog>
   );
@@ -337,6 +319,21 @@ function MediaCard({
   item: MediaItem;
   onYouTubeClick: (item: MediaItem) => void;
 }) {
+  const iconContent = item.image ? (
+    <img
+      src={item.image}
+      alt={item.name}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        borderRadius: "16px",
+      }}
+    />
+  ) : (
+    <span style={{ fontSize: "30px" }}>{item.emoji}</span>
+  );
+
   if (item.type === "youtube") {
     return (
       <button
@@ -346,7 +343,7 @@ function MediaCard({
         style={{ width: "90px" }}
       >
         <div
-          className="rounded-2xl flex items-center justify-center text-3xl transition-all duration-200 group-hover:scale-110 group-active:scale-95"
+          className="rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-110 group-active:scale-95"
           style={{
             width: "72px",
             height: "72px",
@@ -354,7 +351,7 @@ function MediaCard({
             boxShadow: `0 4px 16px ${item.bg}55`,
           }}
         >
-          {item.emoji}
+          {iconContent}
         </div>
         <span
           className="text-center leading-tight font-bold text-white/90 group-hover:text-white transition-colors duration-150"
@@ -366,7 +363,6 @@ function MediaCard({
     );
   }
 
-  // App link — use intent:// to open app directly on Android
   return (
     <a
       href={buildAppLink(item.link)}
@@ -374,7 +370,7 @@ function MediaCard({
       style={{ width: "90px" }}
     >
       <div
-        className="rounded-2xl flex items-center justify-center text-3xl transition-all duration-200 group-hover:scale-110 group-active:scale-95"
+        className="rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-110 group-active:scale-95"
         style={{
           width: "72px",
           height: "72px",
@@ -382,7 +378,7 @@ function MediaCard({
           boxShadow: `0 4px 16px ${item.bg}55`,
         }}
       >
-        {item.emoji}
+        {iconContent}
       </div>
       <span
         className="text-center leading-tight font-bold text-white/90 group-hover:text-white transition-colors duration-150"
@@ -463,12 +459,10 @@ export default function App() {
           "radial-gradient(ellipse at 50% 0%, oklch(0.13 0.04 142 / 0.5) 0%, oklch(0.08 0 0) 60%)",
       }}
     >
-      {/* YouTube modal */}
       {activeYT && (
         <YouTubeModal item={activeYT} onClose={() => setActiveYT(null)} />
       )}
 
-      {/* Header */}
       <header
         className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10"
         style={{
@@ -507,7 +501,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 flex flex-col gap-7 py-6">
         {SECTIONS.map((section) => (
           <ScrollableRow
@@ -518,7 +511,6 @@ export default function App() {
         ))}
       </main>
 
-      {/* Footer */}
       <footer
         className="text-center py-4 text-xs border-t border-white/10"
         style={{ color: "oklch(0.45 0 0)" }}
