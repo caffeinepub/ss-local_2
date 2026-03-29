@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface MediaItem {
   name: string;
   link: string;
@@ -16,8 +14,6 @@ interface Section {
   items: MediaItem[];
   accentColor: string;
 }
-
-// ─── YouTube helpers ──────────────────────────────────────────────────────────
 
 function extractYouTubeId(url: string): string | null {
   try {
@@ -63,115 +59,13 @@ function buildAppLink(playStoreUrl: string): string {
     const u = new URL(playStoreUrl);
     const pkg = u.searchParams.get("id");
     if (pkg) {
-      return (
-        `intent://#Intent;scheme=https;package=${pkg};` +
-        `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`
-      );
+      return `intent://#Intent;scheme=https;package=${pkg};S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
     }
   } catch {
     // fall through
   }
   return playStoreUrl;
 }
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const OTT_APPS: MediaItem[] = [
-  {
-    name: "ETV WIN",
-    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
-    bg: "#b91c1c",
-    image: "/assets/uploads/etv-win-2.png",
-    type: "app",
-  },
-  {
-    name: "SUN NXT",
-    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
-    bg: "#ea580c",
-    image: "/assets/uploads/sun-nxt-6.jpeg",
-    type: "app",
-  },
-  {
-    name: "HOT STAR",
-    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
-    bg: "#1d4ed8",
-    image: "/assets/uploads/hot-star-1.jpeg",
-    type: "app",
-  },
-  {
-    name: "ZEE 5",
-    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
-    bg: "#7c3aed",
-    image: "/assets/uploads/zee-5-4.png",
-    type: "app",
-  },
-  {
-    name: "AHA",
-    link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
-    bg: "#ea580c",
-    image: "/assets/uploads/aha-3.jpeg",
-    type: "app",
-  },
-  {
-    name: "SONY LIV",
-    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
-    bg: "#0f766e",
-    image: "/assets/uploads/Sony-liv-5.jpeg",
-    type: "app",
-  },
-  {
-    name: "AMAZON PRIME",
-    link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
-    bg: "#0369a1",
-    image: "/assets/generated/amazon-prime-icon.dim_200x200.png",
-    type: "app",
-  },
-  {
-    name: "NET FLIX",
-    link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
-    bg: "#dc2626",
-    image: "/assets/generated/netflix-icon.dim_200x200.png",
-    type: "app",
-  },
-];
-
-const TV_CHANNELS: MediaItem[] = [
-  {
-    name: "ETV",
-    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
-    bg: "#b45309",
-    image: "/assets/uploads/Etv-2.png",
-    type: "app",
-  },
-  {
-    name: "GEMINI",
-    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
-    bg: "#4338ca",
-    image: "/assets/uploads/Gemini-3.jpeg",
-    type: "app",
-  },
-  {
-    name: "STAR MAA",
-    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
-    bg: "#0e7490",
-    image: "/assets/uploads/star-maa-1.jpeg",
-    type: "app",
-  },
-  {
-    name: "ZEE TELUGU",
-    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
-    bg: "#6d28d9",
-    image: "/assets/uploads/zee-telugu-4.jpeg",
-    type: "app",
-  },
-  {
-    name: "SPORTS",
-    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
-    bg: "#065f46",
-    image: "/assets/uploads/sports-5.jpeg",
-    type: "app",
-  },
-];
 
 const NEWS_CHANNELS: MediaItem[] = [
   {
@@ -235,34 +129,120 @@ const YOUTUBE_CHANNELS: MediaItem[] = [
   },
 ];
 
+const BHAKTHI_CHANNELS: MediaItem[] = [
+  {
+    name: "Bhakthi",
+    link: "https://www.youtube.com/live/d0dB3kSCMmM?si=2pXoD4YSgLi3uZ5o",
+    bg: "#f59e0b",
+    emoji: "🕉️",
+    type: "youtube",
+  },
+  {
+    name: "Hindhu Dharmam",
+    link: "https://www.youtube.com/live/r-VKXUVmytU?si=y0QCNPPQMVIEdI0G",
+    bg: "#d97706",
+    emoji: "🙏",
+    type: "youtube",
+  },
+  {
+    name: "CVR OM",
+    link: "https://www.youtube.com/live/2FtpKyiHgvk?si=ZSZswAH-MuOr3wzt",
+    bg: "#b45309",
+    emoji: "🔔",
+    type: "youtube",
+  },
+  {
+    name: "SVBC",
+    link: "https://www.youtube.com/live/L5WTm0DVvdk?si=4AhKHK0-WgqsUDqv",
+    bg: "#92400e",
+    emoji: "🛕",
+    type: "youtube",
+  },
+];
+
+const OTT_APPS: MediaItem[] = [
+  {
+    name: "ETV WIN",
+    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
+    bg: "#b91c1c",
+    image: "/assets/uploads/etv-win-2.png",
+    type: "app",
+  },
+  {
+    name: "SUN NXT",
+    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
+    bg: "#ea580c",
+    image: "/assets/uploads/sun-nxt-6.jpeg",
+    type: "app",
+  },
+  {
+    name: "HOT STAR",
+    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
+    bg: "#1d4ed8",
+    image: "/assets/uploads/hot-star-1.jpeg",
+    type: "app",
+  },
+  {
+    name: "ZEE 5",
+    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
+    bg: "#7c3aed",
+    image: "/assets/uploads/zee-5-4.png",
+    type: "app",
+  },
+  {
+    name: "AHA",
+    link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
+    bg: "#ea580c",
+    image: "/assets/uploads/aha-3.jpeg",
+    type: "app",
+  },
+  {
+    name: "SONY LIV",
+    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
+    bg: "#0f766e",
+    image: "/assets/uploads/Sony-liv-5.jpeg",
+    type: "app",
+  },
+  {
+    name: "AMAZON PRIME",
+    link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
+    bg: "#0369a1",
+    image: "/assets/generated/amazon-prime-icon.dim_200x200.png",
+    type: "app",
+  },
+  {
+    name: "NET FLIX",
+    link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
+    bg: "#dc2626",
+    image: "/assets/generated/netflix-icon.dim_200x200.png",
+    type: "app",
+  },
+];
+
 const SECTIONS: Section[] = [
   { title: "NEWS CHANNELS", items: NEWS_CHANNELS, accentColor: "#22dd44" },
   { title: "YOUTUBE", items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
-  { title: "TV CHANNELS", items: TV_CHANNELS, accentColor: "#22dd44" },
+  {
+    title: "BHAKTHI CHANNELS",
+    items: BHAKTHI_CHANNELS,
+    accentColor: "#22dd44",
+  },
   { title: "OTT APPS", items: OTT_APPS, accentColor: "#22dd44" },
 ];
 
 const DEFAULT_CHANNEL = NEWS_CHANNELS[0];
 
-// ─── TopPlayer ────────────────────────────────────────────────────────────────
-
 function TopPlayer({
   current,
   muted,
   onUnmute,
-}: {
-  current: MediaItem;
-  muted: boolean;
-  onUnmute: () => void;
-}) {
+}: { current: MediaItem; muted: boolean; onUnmute: () => void }) {
   const embedUrl = buildEmbedUrl(current, muted);
-
   return (
     <div
       className="w-full"
       style={{ background: "#000", borderBottom: "2px solid #22dd44" }}
     >
-      {/* Now playing label */}
       <div
         className="flex items-center gap-2 px-3 py-1"
         style={{ background: "#111" }}
@@ -284,8 +264,6 @@ function TopPlayer({
           {current.name}
         </span>
       </div>
-
-      {/* iframe player */}
       <div
         style={{ position: "relative", paddingTop: "56.25%" }}
         onClick={muted ? onUnmute : undefined}
@@ -310,7 +288,6 @@ function TopPlayer({
                 border: "none",
               }}
             />
-            {/* Unmute overlay — shown only while muted */}
             {muted && (
               <button
                 type="button"
@@ -384,15 +361,10 @@ function TopPlayer({
   );
 }
 
-// ─── MediaCard Component ───────────────────────────────────────────────────────
-
 function MediaCard({
   item,
   onYouTubeClick,
-}: {
-  item: MediaItem;
-  onYouTubeClick: (item: MediaItem) => void;
-}) {
+}: { item: MediaItem; onYouTubeClick: (item: MediaItem) => void }) {
   const iconContent = item.image ? (
     <img
       src={item.image}
@@ -464,15 +436,10 @@ function MediaCard({
   );
 }
 
-// ─── ScrollableRow Component ───────────────────────────────────────────────────
-
 function ScrollableRow({
   section,
   onYouTubeClick,
-}: {
-  section: Section;
-  onYouTubeClick: (item: MediaItem) => void;
-}) {
+}: { section: Section; onYouTubeClick: (item: MediaItem) => void }) {
   return (
     <section className="w-full">
       <div
@@ -494,7 +461,6 @@ function ScrollableRow({
           {section.title}
         </h2>
       </div>
-
       <div
         className="scrollbar-hide flex gap-4 px-4 pb-2 overflow-x-auto"
         style={{ touchAction: "pan-x" }}
@@ -507,7 +473,6 @@ function ScrollableRow({
           />
         ))}
       </div>
-
       <div
         className="mt-5 mx-4"
         style={{
@@ -520,8 +485,6 @@ function ScrollableRow({
   );
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
-
 export default function App() {
   const [currentChannel, setCurrentChannel] =
     useState<MediaItem>(DEFAULT_CHANNEL);
@@ -531,7 +494,7 @@ export default function App() {
     const embedUrl = buildEmbedUrl(item, false);
     if (embedUrl) {
       setCurrentChannel(item);
-      setMuted(false); // user explicitly chose a channel — play unmuted
+      setMuted(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       window.open(item.link, "_blank", "noopener,noreferrer");
@@ -588,7 +551,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Always-visible top player */}
       <TopPlayer
         current={currentChannel}
         muted={muted}
