@@ -1,24 +1,4 @@
-import { useEffect, useState } from "react";
-
-import amazonImg from "/assets/generated/amazon-prime-icon.dim_200x200.png";
-import floralBg from "/assets/generated/floral-bg.dim_1200x1200.jpg";
-import netflixImg from "/assets/generated/netflix-icon.dim_200x200.png";
-import rbNewsImg from "/assets/generated/rb-news-logo.dim_200x200.png";
-import djSongsImg from "/assets/uploads/DJ-Songs-2.jpeg";
-import folkSongsImg from "/assets/uploads/Folk-songs-1.jpeg";
-// ─── Image Imports (ensures build bundler includes these assets) ──────────────
-import logoImg from "/assets/uploads/IMG_20230812_092139-1.png";
-import ntvImg from "/assets/uploads/NTV-1.jpeg";
-import ssLocalImg from "/assets/uploads/SS-Local-3.png";
-import sonyLivImg from "/assets/uploads/Sony-liv-5.jpeg";
-import tv9Img from "/assets/uploads/TV9-2.png";
-import tnewsImg from "/assets/uploads/Tnews-3.jpeg";
-import v6Img from "/assets/uploads/V6-4.jpeg";
-import ahaImg from "/assets/uploads/aha-3.jpeg";
-import etvWinImg from "/assets/uploads/etv-win-2.png";
-import hotStarImg from "/assets/uploads/hot-star-1.jpeg";
-import sunNxtImg from "/assets/uploads/sun-nxt-6.jpeg";
-import zee5Img from "/assets/uploads/zee-5-4.png";
+import { useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,12 +15,6 @@ interface Section {
   title: string;
   items: MediaItem[];
   accentColor: string;
-}
-
-interface CricMatch {
-  name: string;
-  status: string;
-  score?: string;
 }
 
 // ─── YouTube helpers ──────────────────────────────────────────────────────────
@@ -107,88 +81,95 @@ const OTT_APPS: MediaItem[] = [
     name: "ETV WIN",
     link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
     bg: "#b91c1c",
-    image: etvWinImg,
+    image: "/assets/uploads/etv-win-2.png",
     type: "app",
   },
   {
     name: "SUN NXT",
     link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
     bg: "#ea580c",
-    image: sunNxtImg,
+    image: "/assets/uploads/sun-nxt-6.jpeg",
     type: "app",
   },
   {
     name: "HOT STAR",
     link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
     bg: "#1d4ed8",
-    image: hotStarImg,
+    image: "/assets/uploads/hot-star-1.jpeg",
     type: "app",
   },
   {
     name: "ZEE 5",
     link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
     bg: "#7c3aed",
-    image: zee5Img,
+    image: "/assets/uploads/zee-5-4.png",
     type: "app",
   },
   {
     name: "AHA",
     link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
     bg: "#ea580c",
-    image: ahaImg,
+    image: "/assets/uploads/aha-3.jpeg",
     type: "app",
   },
   {
     name: "SONY LIV",
     link: "https://play.google.com/store/apps/details?id=com.sonyliv",
     bg: "#0f766e",
-    image: sonyLivImg,
+    image: "/assets/uploads/Sony-liv-5.jpeg",
     type: "app",
   },
   {
     name: "AMAZON PRIME",
     link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
     bg: "#0369a1",
-    image: amazonImg,
+    image: "/assets/generated/amazon-prime-icon.dim_200x200.png",
     type: "app",
   },
   {
     name: "NET FLIX",
     link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
     bg: "#dc2626",
-    image: netflixImg,
+    image: "/assets/generated/netflix-icon.dim_200x200.png",
     type: "app",
   },
 ];
 
-const BHAKTHI_CHANNELS: MediaItem[] = [
+const TV_CHANNELS: MediaItem[] = [
   {
-    name: "BHAKTHI",
+    name: "Bhakthi",
     link: "https://www.youtube.com/live/d0dB3kSCMmM?si=2pXoD4YSgLi3uZ5o",
     bg: "#b45309",
-    emoji: "🙏",
+    image: "/assets/uploads/etv-win-2.png",
     type: "youtube",
   },
   {
-    name: "HINDHU DHARMAM",
-    link: "https://www.youtube.com/live/r-VKXUVmytU?si=y0QCNPPQMVIEdI0G",
-    bg: "#dc2626",
-    emoji: "🕉️",
-    type: "youtube",
+    name: "GEMINI",
+    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
+    bg: "#4338ca",
+    image: "/assets/uploads/Gemini-3.jpeg",
+    type: "app",
   },
   {
-    name: "CVR OM",
-    link: "https://www.youtube.com/live/2FtpKyiHgvk?si=ZSZswAH-MuOr3wzt",
-    bg: "#7c3aed",
-    emoji: "🪔",
-    type: "youtube",
+    name: "STAR MAA",
+    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
+    bg: "#0e7490",
+    image: "/assets/uploads/star-maa-1.jpeg",
+    type: "app",
   },
   {
-    name: "SVBC",
-    link: "https://www.youtube.com/live/L5WTm0DVvdk?si=4AhKHK0-WgqsUDqv",
-    bg: "#0f766e",
-    emoji: "⛩️",
-    type: "youtube",
+    name: "ZEE TELUGU",
+    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
+    bg: "#6d28d9",
+    image: "/assets/uploads/zee-telugu-4.jpeg",
+    type: "app",
+  },
+  {
+    name: "SPORTS",
+    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
+    bg: "#065f46",
+    image: "/assets/uploads/sports-5.jpeg",
+    type: "app",
   },
 ];
 
@@ -197,28 +178,28 @@ const NEWS_CHANNELS: MediaItem[] = [
     name: "TV9",
     link: "https://www.youtube.com/live/II_m28Bm-iM?si=s14Ud_UQus9xzsc4",
     bg: "#9f1239",
-    image: tv9Img,
+    image: "/assets/uploads/TV9-2.png",
     type: "youtube",
   },
   {
     name: "V6",
     link: "https://www.youtube.com/live/U58aDf-zfmY?si=Xu9hU2bYRT7_bT9w",
     bg: "#1e40af",
-    image: v6Img,
+    image: "/assets/uploads/V6-4.jpeg",
     type: "youtube",
   },
   {
     name: "T NEWS",
     link: "https://www.youtube.com/live/ANU5_XHW2wA?si=MXyXj4wzBhELan7Z",
     bg: "#92400e",
-    image: tnewsImg,
+    image: "/assets/uploads/Tnews-3.jpeg",
     type: "youtube",
   },
   {
     name: "NTV",
     link: "https://www.youtube.com/live/L0RktSIM980?si=f574WHml0qnMJ1LO",
     bg: "#1f2937",
-    image: ntvImg,
+    image: "/assets/uploads/NTV-1.jpeg",
     type: "youtube",
   },
 ];
@@ -228,28 +209,28 @@ const YOUTUBE_CHANNELS: MediaItem[] = [
     name: "SS LOCAL",
     link: "https://youtube.com/@sslocal264?si=Lg5VJWkdkUDtMB1Q",
     bg: "#dc2626",
-    image: ssLocalImg,
+    image: "/assets/uploads/SS-Local-3.png",
     type: "youtube",
   },
   {
     name: "RB NEWS",
     link: "https://youtube.com/@rbnews123?si=8nEPPgDnunxpqj0F",
     bg: "#b91c1c",
-    image: rbNewsImg,
+    image: "/assets/generated/rb-news-logo.dim_200x200.png",
     type: "youtube",
   },
   {
     name: "DJ SONGS",
     link: "https://youtube.com/playlist?list=PL8yjkbZSTUmU32VtYBtYLgwjmnbiIuwrI&si=ojEj-eg7GAq1lbrg",
     bg: "#7c3aed",
-    image: djSongsImg,
+    image: "/assets/uploads/DJ-Songs-2.jpeg",
     type: "youtube",
   },
   {
     name: "FOLK SONGS",
     link: "https://youtu.be/_r0Ct38-gUU?si=ER30j6CGd8ATvfcL",
     bg: "#065f46",
-    image: folkSongsImg,
+    image: "/assets/uploads/Folk-songs-1.jpeg",
     type: "youtube",
   },
 ];
@@ -257,79 +238,11 @@ const YOUTUBE_CHANNELS: MediaItem[] = [
 const SECTIONS: Section[] = [
   { title: "NEWS CHANNELS", items: NEWS_CHANNELS, accentColor: "#22dd44" },
   { title: "YOUTUBE", items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
-  {
-    title: "BHAKTHI CHANNELS",
-    items: BHAKTHI_CHANNELS,
-    accentColor: "#22dd44",
-  },
+  { title: "TV CHANNELS", items: TV_CHANNELS, accentColor: "#22dd44" },
   { title: "OTT APPS", items: OTT_APPS, accentColor: "#22dd44" },
 ];
 
 const DEFAULT_CHANNEL = NEWS_CHANNELS[0];
-const CRICAPI_KEY = "91e65db1-3183-4d64-b4c2-288bdf3cf7f3";
-
-// ─── IPL Score Banner ─────────────────────────────────────────────────────────
-
-function IplScoreBanner() {
-  const [scoreText, setScoreText] = useState("Loading live scores...");
-
-  useEffect(() => {
-    async function fetchScores() {
-      try {
-        const res = await fetch(
-          `https://api.cricapi.com/v1/currentMatches?apikey=${CRICAPI_KEY}&offset=0`,
-        );
-        const data = await res.json();
-        if (data.status !== "success" || !data.data || data.data.length === 0) {
-          setScoreText("No live matches right now");
-          return;
-        }
-        const parts: string[] = data.data.map((m: CricMatch) => {
-          const score = m.score ? ` — ${m.score}` : "";
-          return `${m.name}${score} [${m.status}]`;
-        });
-        setScoreText(parts.join("   •   "));
-      } catch {
-        setScoreText("Live scores unavailable");
-      }
-    }
-    fetchScores();
-    const interval = setInterval(fetchScores, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div
-      style={{
-        background: "#0a2a0a",
-        borderBottom: "1px solid #22dd44",
-        overflow: "hidden",
-        whiteSpace: "nowrap",
-        padding: "5px 0",
-      }}
-    >
-      <div
-        style={{
-          display: "inline-block",
-          animation: "marquee 30s linear infinite",
-          paddingLeft: "100%",
-          color: "#22dd44",
-          fontSize: "12px",
-          fontWeight: "bold",
-          letterSpacing: "0.5px",
-        }}
-      >
-        🏏 LIVE SCORES: {scoreText}
-      </div>
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-      `}</style>
-    </div>
-  );
-}
 
 // ─── TopPlayer ────────────────────────────────────────────────────────────────
 
@@ -349,6 +262,7 @@ function TopPlayer({
       className="w-full"
       style={{ background: "#000", borderBottom: "2px solid #22dd44" }}
     >
+      {/* Now playing label */}
       <div
         className="flex items-center gap-2 px-3 py-1"
         style={{ background: "#111" }}
@@ -371,6 +285,7 @@ function TopPlayer({
         </span>
       </div>
 
+      {/* iframe player */}
       <div
         style={{ position: "relative", paddingTop: "56.25%" }}
         onClick={muted ? onUnmute : undefined}
@@ -395,6 +310,7 @@ function TopPlayer({
                 border: "none",
               }}
             />
+            {/* Unmute overlay — shown only while muted */}
             {muted && (
               <button
                 type="button"
@@ -615,7 +531,7 @@ export default function App() {
     const embedUrl = buildEmbedUrl(item, false);
     if (embedUrl) {
       setCurrentChannel(item);
-      setMuted(false);
+      setMuted(false); // user explicitly chose a channel — play unmuted
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       window.open(item.link, "_blank", "noopener,noreferrer");
@@ -626,7 +542,7 @@ export default function App() {
     <div
       className="min-h-screen flex flex-col"
       style={{
-        backgroundImage: `url('${floralBg}')`,
+        backgroundImage: "url('/assets/generated/floral-bg.dim_1200x1200.jpg')",
         backgroundSize: "500px 500px",
         backgroundRepeat: "repeat",
         backgroundPosition: "center center",
@@ -642,7 +558,7 @@ export default function App() {
         }}
       >
         <img
-          src={logoImg}
+          src="/assets/uploads/IMG_20230812_092139-1.png"
           alt="SS LOCAL logo"
           style={{
             height: "52px",
@@ -671,9 +587,6 @@ export default function App() {
           </p>
         </div>
       </header>
-
-      {/* IPL Score Banner */}
-      <IplScoreBanner />
 
       {/* Always-visible top player */}
       <TopPlayer
