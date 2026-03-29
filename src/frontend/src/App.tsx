@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface MediaItem {
   name: string;
@@ -14,6 +16,14 @@ interface Section {
   items: MediaItem[];
   accentColor: string;
 }
+
+interface CricMatch {
+  name: string;
+  status: string;
+  score?: string;
+}
+
+// ─── YouTube helpers ──────────────────────────────────────────────────────────
 
 function extractYouTubeId(url: string): string | null {
   try {
@@ -59,13 +69,108 @@ function buildAppLink(playStoreUrl: string): string {
     const u = new URL(playStoreUrl);
     const pkg = u.searchParams.get("id");
     if (pkg) {
-      return `intent://#Intent;scheme=https;package=${pkg};S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+      return (
+        `intent://#Intent;scheme=https;package=${pkg};` +
+        `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`
+      );
     }
   } catch {
     // fall through
   }
   return playStoreUrl;
 }
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const OTT_APPS: MediaItem[] = [
+  {
+    name: "ETV WIN",
+    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
+    bg: "#b91c1c",
+    image: "/assets/uploads/etv-win-2.png",
+    type: "app",
+  },
+  {
+    name: "SUN NXT",
+    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
+    bg: "#ea580c",
+    image: "/assets/uploads/sun-nxt-6.jpeg",
+    type: "app",
+  },
+  {
+    name: "HOT STAR",
+    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
+    bg: "#1d4ed8",
+    image: "/assets/uploads/hot-star-1.jpeg",
+    type: "app",
+  },
+  {
+    name: "ZEE 5",
+    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
+    bg: "#7c3aed",
+    image: "/assets/uploads/zee-5-4.png",
+    type: "app",
+  },
+  {
+    name: "AHA",
+    link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
+    bg: "#ea580c",
+    image: "/assets/uploads/aha-3.jpeg",
+    type: "app",
+  },
+  {
+    name: "SONY LIV",
+    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
+    bg: "#0f766e",
+    image: "/assets/uploads/Sony-liv-5.jpeg",
+    type: "app",
+  },
+  {
+    name: "AMAZON PRIME",
+    link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
+    bg: "#0369a1",
+    image: "/assets/generated/amazon-prime-icon.dim_200x200.png",
+    type: "app",
+  },
+  {
+    name: "NET FLIX",
+    link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
+    bg: "#dc2626",
+    image: "/assets/generated/netflix-icon.dim_200x200.png",
+    type: "app",
+  },
+];
+
+const BHAKTHI_CHANNELS: MediaItem[] = [
+  {
+    name: "BHAKTHI",
+    link: "https://www.youtube.com/live/d0dB3kSCMmM?si=2pXoD4YSgLi3uZ5o",
+    bg: "#b45309",
+    emoji: "🙏",
+    type: "youtube",
+  },
+  {
+    name: "HINDHU DHARMAM",
+    link: "https://www.youtube.com/live/r-VKXUVmytU?si=y0QCNPPQMVIEdI0G",
+    bg: "#dc2626",
+    emoji: "🕉️",
+    type: "youtube",
+  },
+  {
+    name: "CVR OM",
+    link: "https://www.youtube.com/live/2FtpKyiHgvk?si=ZSZswAH-MuOr3wzt",
+    bg: "#7c3aed",
+    emoji: "🪔",
+    type: "youtube",
+  },
+  {
+    name: "SVBC",
+    link: "https://www.youtube.com/live/L5WTm0DVvdk?si=4AhKHK0-WgqsUDqv",
+    bg: "#0f766e",
+    emoji: "⛩️",
+    type: "youtube",
+  },
+];
 
 const NEWS_CHANNELS: MediaItem[] = [
   {
@@ -129,96 +234,6 @@ const YOUTUBE_CHANNELS: MediaItem[] = [
   },
 ];
 
-const BHAKTHI_CHANNELS: MediaItem[] = [
-  {
-    name: "Bhakthi",
-    link: "https://www.youtube.com/live/d0dB3kSCMmM?si=2pXoD4YSgLi3uZ5o",
-    bg: "#f59e0b",
-    emoji: "🕉️",
-    type: "youtube",
-  },
-  {
-    name: "Hindhu Dharmam",
-    link: "https://www.youtube.com/live/r-VKXUVmytU?si=y0QCNPPQMVIEdI0G",
-    bg: "#d97706",
-    emoji: "🙏",
-    type: "youtube",
-  },
-  {
-    name: "CVR OM",
-    link: "https://www.youtube.com/live/2FtpKyiHgvk?si=ZSZswAH-MuOr3wzt",
-    bg: "#b45309",
-    emoji: "🔔",
-    type: "youtube",
-  },
-  {
-    name: "SVBC",
-    link: "https://www.youtube.com/live/L5WTm0DVvdk?si=4AhKHK0-WgqsUDqv",
-    bg: "#92400e",
-    emoji: "🛕",
-    type: "youtube",
-  },
-];
-
-const OTT_APPS: MediaItem[] = [
-  {
-    name: "ETV WIN",
-    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
-    bg: "#b91c1c",
-    image: "/assets/uploads/etv-win-2.png",
-    type: "app",
-  },
-  {
-    name: "SUN NXT",
-    link: "https://play.google.com/store/apps/details?id=com.suntv.sunnxt",
-    bg: "#ea580c",
-    image: "/assets/uploads/sun-nxt-6.jpeg",
-    type: "app",
-  },
-  {
-    name: "HOT STAR",
-    link: "https://play.google.com/store/apps/details?id=in.startv.hotstar",
-    bg: "#1d4ed8",
-    image: "/assets/uploads/hot-star-1.jpeg",
-    type: "app",
-  },
-  {
-    name: "ZEE 5",
-    link: "https://play.google.com/store/apps/details?id=com.graymatrix.did",
-    bg: "#7c3aed",
-    image: "/assets/uploads/zee-5-4.png",
-    type: "app",
-  },
-  {
-    name: "AHA",
-    link: "https://play.google.com/store/apps/details?id=ahaflix.tv",
-    bg: "#ea580c",
-    image: "/assets/uploads/aha-3.jpeg",
-    type: "app",
-  },
-  {
-    name: "SONY LIV",
-    link: "https://play.google.com/store/apps/details?id=com.sonyliv",
-    bg: "#0f766e",
-    image: "/assets/uploads/Sony-liv-5.jpeg",
-    type: "app",
-  },
-  {
-    name: "AMAZON PRIME",
-    link: "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
-    bg: "#0369a1",
-    image: "/assets/generated/amazon-prime-icon.dim_200x200.png",
-    type: "app",
-  },
-  {
-    name: "NET FLIX",
-    link: "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
-    bg: "#dc2626",
-    image: "/assets/generated/netflix-icon.dim_200x200.png",
-    type: "app",
-  },
-];
-
 const SECTIONS: Section[] = [
   { title: "NEWS CHANNELS", items: NEWS_CHANNELS, accentColor: "#22dd44" },
   { title: "YOUTUBE", items: YOUTUBE_CHANNELS, accentColor: "#22dd44" },
@@ -231,18 +246,90 @@ const SECTIONS: Section[] = [
 ];
 
 const DEFAULT_CHANNEL = NEWS_CHANNELS[0];
+const CRICAPI_KEY = "91e65db1-3183-4d64-b4c2-288bdf3cf7f3";
+
+// ─── IPL Score Banner ─────────────────────────────────────────────────────────
+
+function IplScoreBanner() {
+  const [scoreText, setScoreText] = useState("Loading live scores...");
+
+  useEffect(() => {
+    async function fetchScores() {
+      try {
+        const res = await fetch(
+          `https://api.cricapi.com/v1/currentMatches?apikey=${CRICAPI_KEY}&offset=0`,
+        );
+        const data = await res.json();
+        if (data.status !== "success" || !data.data || data.data.length === 0) {
+          setScoreText("No live matches right now");
+          return;
+        }
+        const parts: string[] = data.data.map((m: CricMatch) => {
+          const score = m.score ? ` — ${m.score}` : "";
+          return `${m.name}${score} [${m.status}]`;
+        });
+        setScoreText(parts.join("   •   "));
+      } catch {
+        setScoreText("Live scores unavailable");
+      }
+    }
+    fetchScores();
+    const interval = setInterval(fetchScores, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div
+      style={{
+        background: "#0a2a0a",
+        borderBottom: "1px solid #22dd44",
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        padding: "5px 0",
+      }}
+    >
+      <div
+        style={{
+          display: "inline-block",
+          animation: "marquee 30s linear infinite",
+          paddingLeft: "100%",
+          color: "#22dd44",
+          fontSize: "12px",
+          fontWeight: "bold",
+          letterSpacing: "0.5px",
+        }}
+      >
+        🏏 LIVE SCORES: {scoreText}
+      </div>
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── TopPlayer ────────────────────────────────────────────────────────────────
 
 function TopPlayer({
   current,
   muted,
   onUnmute,
-}: { current: MediaItem; muted: boolean; onUnmute: () => void }) {
+}: {
+  current: MediaItem;
+  muted: boolean;
+  onUnmute: () => void;
+}) {
   const embedUrl = buildEmbedUrl(current, muted);
+
   return (
     <div
       className="w-full"
       style={{ background: "#000", borderBottom: "2px solid #22dd44" }}
     >
+      {/* Now playing label */}
       <div
         className="flex items-center gap-2 px-3 py-1"
         style={{ background: "#111" }}
@@ -264,6 +351,8 @@ function TopPlayer({
           {current.name}
         </span>
       </div>
+
+      {/* iframe player */}
       <div
         style={{ position: "relative", paddingTop: "56.25%" }}
         onClick={muted ? onUnmute : undefined}
@@ -361,10 +450,15 @@ function TopPlayer({
   );
 }
 
+// ─── MediaCard Component ───────────────────────────────────────────────────────
+
 function MediaCard({
   item,
   onYouTubeClick,
-}: { item: MediaItem; onYouTubeClick: (item: MediaItem) => void }) {
+}: {
+  item: MediaItem;
+  onYouTubeClick: (item: MediaItem) => void;
+}) {
   const iconContent = item.image ? (
     <img
       src={item.image}
@@ -436,10 +530,15 @@ function MediaCard({
   );
 }
 
+// ─── ScrollableRow Component ───────────────────────────────────────────────────
+
 function ScrollableRow({
   section,
   onYouTubeClick,
-}: { section: Section; onYouTubeClick: (item: MediaItem) => void }) {
+}: {
+  section: Section;
+  onYouTubeClick: (item: MediaItem) => void;
+}) {
   return (
     <section className="w-full">
       <div
@@ -461,6 +560,7 @@ function ScrollableRow({
           {section.title}
         </h2>
       </div>
+
       <div
         className="scrollbar-hide flex gap-4 px-4 pb-2 overflow-x-auto"
         style={{ touchAction: "pan-x" }}
@@ -473,6 +573,7 @@ function ScrollableRow({
           />
         ))}
       </div>
+
       <div
         className="mt-5 mx-4"
         style={{
@@ -484,6 +585,8 @@ function ScrollableRow({
     </section>
   );
 }
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [currentChannel, setCurrentChannel] =
@@ -551,6 +654,10 @@ export default function App() {
         </div>
       </header>
 
+      {/* IPL Score Banner */}
+      <IplScoreBanner />
+
+      {/* Always-visible top player */}
       <TopPlayer
         current={currentChannel}
         muted={muted}
