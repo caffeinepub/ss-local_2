@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,8 +36,26 @@ function extractYouTubeId(url: string): string | null {
   }
 }
 
-function buildEmbedUrl(videoId: string): string {
-  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+function extractPlaylistId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    return u.searchParams.get("list");
+  } catch {
+    return null;
+  }
+}
+
+function buildEmbedUrl(item: MediaItem, muted: boolean): string {
+  const muteParam = muted ? "1" : "0";
+  const videoId = extractYouTubeId(item.link);
+  if (videoId) {
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muteParam}&rel=0&playsinline=1&modestbranding=1`;
+  }
+  const playlistId = extractPlaylistId(item.link);
+  if (playlistId) {
+    return `https://www.youtube-nocookie.com/embed/videoseries?list=${playlistId}&autoplay=1&mute=${muteParam}&rel=0&playsinline=1&modestbranding=1`;
+  }
+  return "";
 }
 
 function buildAppLink(playStoreUrl: string): string {
@@ -172,7 +190,7 @@ const NEWS_CHANNELS: MediaItem[] = [
   },
   {
     name: "T NEWS",
-    link: "https://www.youtube.com/live/e_JVjPm96V8?si=297yQg0titTxWYlc",
+    link: "https://www.youtube.com/live/ANU5_XHW2wA?si=MXyXj4wzBhELan7Z",
     bg: "#92400e",
     image: "/assets/uploads/Tnews-3.jpeg",
     type: "youtube",
@@ -192,6 +210,13 @@ const YOUTUBE_CHANNELS: MediaItem[] = [
     link: "https://youtube.com/@sslocal264?si=Lg5VJWkdkUDtMB1Q",
     bg: "#dc2626",
     image: "/assets/uploads/SS-Local-3.png",
+    type: "youtube",
+  },
+  {
+    name: "RB NEWS",
+    link: "https://youtube.com/@rbnews123?si=8nEPPgDnunxpqj0F",
+    bg: "#b91c1c",
+    image: "/assets/generated/rb-news-logo.dim_200x200.png",
     type: "youtube",
   },
   {
@@ -217,60 +242,64 @@ const SECTIONS: Section[] = [
   { title: "OTT APPS", items: OTT_APPS, accentColor: "#22dd44" },
 ];
 
-// ─── YouTube Modal ─────────────────────────────────────────────────────────────
+const DEFAULT_CHANNEL = NEWS_CHANNELS[0];
 
-function YouTubeModal({
-  item,
-  onClose,
+// ─── TopPlayer ────────────────────────────────────────────────────────────────
+
+function TopPlayer({
+  current,
+  muted,
+  onUnmute,
 }: {
-  item: MediaItem;
-  onClose: () => void;
+  current: MediaItem;
+  muted: boolean;
+  onUnmute: () => void;
 }) {
-  const videoId = extractYouTubeId(item.link);
+  const embedUrl = buildEmbedUrl(current, muted);
 
   return (
-    <dialog
-      aria-label={`Play ${item.name}`}
-      open
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center m-0 w-full h-full max-w-none max-h-none border-0 p-0"
-      style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(6px)" }}
-      onClick={onClose}
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
+    <div
+      className="w-full"
+      style={{ background: "#000", borderBottom: "2px solid #22dd44" }}
     >
+      {/* Now playing label */}
       <div
-        className="relative w-full mx-4 rounded-2xl overflow-hidden"
-        style={{ maxWidth: "640px", background: "#000" }}
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          if (e.key !== "Escape") e.stopPropagation();
-        }}
-        role="document"
+        className="flex items-center gap-2 px-3 py-1"
+        style={{ background: "#111" }}
       >
-        {/* Title bar */}
-        <div
-          className="flex items-center justify-between px-4 py-3"
-          style={{ background: "#111" }}
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: "#22dd44",
+            display: "inline-block",
+            boxShadow: "0 0 6px #22dd44",
+          }}
+        />
+        <span
+          className="text-xs font-bold tracking-widest uppercase"
+          style={{ color: "#22dd44" }}
         >
-          <span className="font-bold text-white tracking-wider text-sm">
-            {item.name}
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors text-xl leading-none"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
+          {current.name}
+        </span>
+      </div>
 
-        {/* Player */}
-        <div style={{ position: "relative", paddingTop: "56.25%" }}>
-          {videoId ? (
+      {/* iframe player */}
+      <div
+        style={{ position: "relative", paddingTop: "56.25%" }}
+        onClick={muted ? onUnmute : undefined}
+        onKeyDown={muted ? (e) => e.key === "Enter" && onUnmute() : undefined}
+        role={muted ? "button" : undefined}
+        tabIndex={muted ? 0 : undefined}
+      >
+        {embedUrl ? (
+          <>
             <iframe
-              src={buildEmbedUrl(videoId)}
-              title={item.name}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              key={`${current.name}-${muted}`}
+              src={embedUrl}
+              title={current.name}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               style={{
                 position: "absolute",
@@ -281,32 +310,77 @@ function YouTubeModal({
                 border: "none",
               }}
             />
-          ) : (
-            <div
-              className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/70"
-              style={{ background: "#0a0a0a" }}
-            >
-              <span className="text-5xl">{item.emoji}</span>
-              <p className="text-sm text-center px-6">
-                This link opens a playlist or channel.
-              </p>
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2 rounded-full text-sm font-bold text-black"
-                style={{ background: "#22dd44" }}
-                onClick={onClose}
+            {/* Unmute overlay — shown only while muted */}
+            {muted && (
+              <button
+                type="button"
+                onClick={onUnmute}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 10,
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                }}
               >
-                Open in YouTube
-              </a>
-            </div>
-          )}
-        </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(0,0,0,0.65)",
+                    borderRadius: "16px",
+                    padding: "18px 32px",
+                    border: "2px solid #22dd44",
+                    boxShadow: "0 0 24px rgba(34,221,68,0.5)",
+                  }}
+                >
+                  <span style={{ fontSize: "36px" }}>🔊</span>
+                  <span
+                    style={{
+                      color: "#22dd44",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      letterSpacing: "2px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    TAP TO UNMUTE
+                  </span>
+                </div>
+              </button>
+            )}
+          </>
+        ) : (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+            style={{ background: "#0a0a0a" }}
+          >
+            <p className="text-sm text-white/60 text-center px-6">
+              This channel opens in YouTube
+            </p>
+            <a
+              href={current.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2 rounded-full text-sm font-bold text-black"
+              style={{ background: "#22dd44" }}
+            >
+              Open in YouTube
+            </a>
+          </div>
+        )}
       </div>
-
-      <p className="mt-4 text-xs text-white/30">Tap outside to close</p>
-    </dialog>
+    </div>
   );
 }
 
@@ -354,8 +428,8 @@ function MediaCard({
           {iconContent}
         </div>
         <span
-          className="text-center leading-tight font-bold text-white/90 group-hover:text-white transition-colors duration-150"
-          style={{ fontSize: "10px", maxWidth: "88px" }}
+          className="text-center leading-tight font-bold"
+          style={{ fontSize: "10px", maxWidth: "88px", color: "#1a1a2e" }}
         >
           {item.name}
         </span>
@@ -381,8 +455,8 @@ function MediaCard({
         {iconContent}
       </div>
       <span
-        className="text-center leading-tight font-bold text-white/90 group-hover:text-white transition-colors duration-150"
-        style={{ fontSize: "10px", maxWidth: "88px" }}
+        className="text-center leading-tight font-bold"
+        style={{ fontSize: "10px", maxWidth: "88px", color: "#1a1a2e" }}
       >
         {item.name}
       </span>
@@ -399,11 +473,12 @@ function ScrollableRow({
   section: Section;
   onYouTubeClick: (item: MediaItem) => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   return (
     <section className="w-full">
-      <div className="flex items-center gap-3 px-4 mb-4">
+      <div
+        className="flex items-center gap-3 px-4 mb-4"
+        style={{ background: "#000", paddingTop: "8px", paddingBottom: "8px" }}
+      >
         <div
           className="h-5 w-1 rounded-full"
           style={{ background: section.accentColor }}
@@ -413,7 +488,7 @@ function ScrollableRow({
           style={{
             color: section.accentColor,
             fontFamily: "'Black Han Sans', sans-serif",
-            textShadow: `0 0 16px ${section.accentColor}88`,
+            textShadow: `0 1px 4px rgba(0,0,0,0.5), 0 0 12px ${section.accentColor}88`,
           }}
         >
           {section.title}
@@ -421,7 +496,6 @@ function ScrollableRow({
       </div>
 
       <div
-        ref={scrollRef}
         className="scrollbar-hide flex gap-4 px-4 pb-2 overflow-x-auto"
         style={{ touchAction: "pan-x" }}
       >
@@ -439,7 +513,7 @@ function ScrollableRow({
         style={{
           height: "1px",
           background:
-            "linear-gradient(to right, oklch(0.82 0.22 142 / 0.3), transparent)",
+            "linear-gradient(to right, rgba(34,221,68,0.4), transparent)",
         }}
       />
     </section>
@@ -449,26 +523,38 @@ function ScrollableRow({
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [activeYT, setActiveYT] = useState<MediaItem | null>(null);
+  const [currentChannel, setCurrentChannel] =
+    useState<MediaItem>(DEFAULT_CHANNEL);
+  const [muted, setMuted] = useState(true);
+
+  function handleYouTubeClick(item: MediaItem) {
+    const embedUrl = buildEmbedUrl(item, false);
+    if (embedUrl) {
+      setCurrentChannel(item);
+      setMuted(false); // user explicitly chose a channel — play unmuted
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.open(item.link, "_blank", "noopener,noreferrer");
+    }
+  }
 
   return (
     <div
       className="min-h-screen flex flex-col"
       style={{
-        background:
-          "radial-gradient(ellipse at 50% 0%, oklch(0.13 0.04 142 / 0.5) 0%, oklch(0.08 0 0) 60%)",
+        backgroundImage: "url('/assets/generated/floral-bg.dim_1200x1200.jpg')",
+        backgroundSize: "500px 500px",
+        backgroundRepeat: "repeat",
+        backgroundPosition: "center center",
       }}
     >
-      {activeYT && (
-        <YouTubeModal item={activeYT} onClose={() => setActiveYT(null)} />
-      )}
-
       <header
-        className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10"
+        className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b"
         style={{
-          background: "oklch(0.10 0.01 142 / 0.92)",
+          background: "rgba(255,255,255,0.88)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
+          borderColor: "rgba(34,221,68,0.3)",
         }}
       >
         <img
@@ -487,41 +573,53 @@ export default function App() {
             style={{
               fontFamily: "'Black Han Sans', sans-serif",
               color: "#22dd44",
-              textShadow: "0 0 24px rgba(34,221,68,0.6)",
+              textShadow:
+                "0 1px 3px rgba(0,0,0,0.2), 0 0 20px rgba(34,221,68,0.5)",
             }}
           >
             SS LOCAL
           </h1>
           <p
             className="text-xs font-body tracking-wider"
-            style={{ color: "oklch(0.55 0 0)" }}
+            style={{ color: "#666" }}
           >
             YOUR MEDIA HUB
           </p>
         </div>
       </header>
 
+      {/* Always-visible top player */}
+      <TopPlayer
+        current={currentChannel}
+        muted={muted}
+        onUnmute={() => setMuted(false)}
+      />
+
       <main className="flex-1 flex flex-col gap-7 py-6">
         {SECTIONS.map((section) => (
           <ScrollableRow
             key={section.title}
             section={section}
-            onYouTubeClick={setActiveYT}
+            onYouTubeClick={handleYouTubeClick}
           />
         ))}
       </main>
 
       <footer
-        className="text-center py-4 text-xs border-t border-white/10"
-        style={{ color: "oklch(0.45 0 0)" }}
+        className="text-center py-4 text-xs border-t"
+        style={{
+          color: "#555",
+          borderColor: "rgba(34,221,68,0.3)",
+          background: "rgba(255,255,255,0.7)",
+        }}
       >
-        © 2026. Built with ❤️ using{" "}
+        © {new Date().getFullYear()}. Built with ❤️ using{" "}
         <a
-          href="https://caffeine.ai"
+          href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`}
           target="_blank"
           rel="noopener noreferrer"
           className="underline underline-offset-2 hover:text-primary transition-colors"
-          style={{ color: "oklch(0.65 0.15 142)" }}
+          style={{ color: "#16a34a" }}
         >
           caffeine.ai
         </a>
