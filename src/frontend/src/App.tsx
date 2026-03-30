@@ -137,11 +137,11 @@ const OTT_APPS: MediaItem[] = [
 
 const TV_CHANNELS: MediaItem[] = [
   {
-    name: "Bhakthi",
-    link: "https://www.youtube.com/live/d0dB3kSCMmM?si=2pXoD4YSgLi3uZ5o",
+    name: "ETV",
+    link: "https://play.google.com/store/apps/details?id=com.etvwin.mobile",
     bg: "#b45309",
-    image: "/assets/uploads/etv-win-2.png",
-    type: "youtube",
+    image: "/assets/uploads/Etv-2.png",
+    type: "app",
   },
   {
     name: "GEMINI",
@@ -558,7 +558,7 @@ export default function App() {
         }}
       >
         <img
-          src="/assets/uploads/IMG_20230812_092139-1.png"
+          src="/assets/uploads/SS-Local-3.png"
           alt="SS LOCAL logo"
           style={{
             height: "52px",
